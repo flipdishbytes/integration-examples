@@ -15,16 +15,15 @@ namespace WpfIntegration.ViewModels
     {
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
+        private readonly string _accessToken;
         private readonly Order _order;
         private readonly OrdersApi _ordersApi;
-
-        public string OrderSummary { get; }
-
-        public ICommand AcceptCommand { get; }
-        public ICommand DeclineCommand { get; }
-
+        private int _estimatedMinutesForDelivery;
+        private Reject.RejectReasonEnum _rejectReason;
+        
         public OrderReadyToProccessViewModel(string accessToken, Order order)
         {
+            _accessToken = accessToken;
             _order = order;
             OrderSummary = BuildOrderSummary();
             AcceptCommand = new RelayCommand(ExecuteAcceptCommand);
@@ -47,14 +46,33 @@ namespace WpfIntegration.ViewModels
             _ordersApi = new OrdersApi(configuration);
         }
 
-        private void ExecuteAcceptCommand(object obj)
+        public string OrderSummary { get; }
+
+        public int EstimatedMinutesForDelivery
         {
-            throw new NotImplementedException();
+            get => _estimatedMinutesForDelivery;
+            set => SetProperty(ref _estimatedMinutesForDelivery, value);
         }
 
-        private void ExecuteDeclineCommand(object obj)
+        public Reject.RejectReasonEnum RejectReason
         {
-            throw new NotImplementedException();
+            get => _rejectReason;
+            set => SetProperty(ref _rejectReason, value);
+        }
+
+        public ICommand AcceptCommand { get; }
+        public ICommand DeclineCommand { get; }
+
+        private async void ExecuteAcceptCommand(object obj)
+        {
+            await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDelivery));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
+        }
+
+        private async void ExecuteDeclineCommand(object obj)
+        {
+            await _ordersApi.RejectOrderAsync(_order.OrderId, new Reject(RejectReason));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
         }
 
         private string BuildOrderSummary()
