@@ -1,74 +1,75 @@
-﻿using IdentityModel;
-using IdentityModel.Client;
-using System;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+﻿using System;
+using System.Collections.Generic;
 using System.Windows;
+using System.Windows.Controls;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
+using WpfIntegration.ViewModels;
+using WpfIntegration.Views;
 
 namespace WpfIntegration
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        private LoginWebView _login;
-        private AuthorizeResponse _response;
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        private IViewModel _currentViewModel;
-
-        public IViewModel CurrentViewModel
-        {
-            get => _currentViewModel;
-            set => SetProperty(value, ref _currentViewModel);
-        }
-
+        //This is used to hold our registered navigation pairs
+        private Dictionary<Type, Grid> _viewViewModelPairs = new Dictionary<Type, Grid>();
+        
         public MainWindow()
         {
             InitializeComponent();
 
-            _login = new LoginWebView();
-            _login.Done += (s, e) =>
+            //Register basic pairs for navigation
+            _viewViewModelPairs.Add(typeof(LoginViewModel), new LoginView());
+            _viewViewModelPairs.Add(typeof(OrdersViewModel), new OrdersView());
+            _viewViewModelPairs.Add(typeof(OrderReadyToProccessViewModel), new OrderReadyToProccessView());
+
+            //Navigate to the first view model, from here on navigation will be handled in the view models
+            NavigateTo(this, new AppNavigationEventArgs(new LoginViewModel()));
+        }
+
+        /// <summary>
+        /// Basic navigation implementation, you should only call it from a class that inherits from IViewModel
+        /// </summary>
+        /// <param name="sender">View model that triggered this event</param>
+        /// <param name="navigationArgs">Arguments passed for navigation</param>
+        private async void NavigateTo(object sender, AppNavigationEventArgs navigationArgs)
+        {
+            //Get the type of the view model
+            var navigationType = navigationArgs.ViewModel.GetType();
+
+            //Search for the type in the registered pairs
+            if (!_viewViewModelPairs.ContainsKey(navigationType))
             {
-                _response = e;
-            };
+                throw new ArgumentOutOfRangeException(nameof(navigationArgs.ViewModel));
+            }
 
-            Loaded += (s, e) =>
+            //If the triggering, make sure you call navigate from & unsubscribe from the event subscribed to below
+            if (sender is IViewModel currentViewModel)
             {
-                _login.Owner = this;
-            };
-        }
+                await currentViewModel.NavigateFrom();
+                currentViewModel.RequestNavigation -= NavigateTo;
+            }
 
-        private void LoginButton_Click(object sender, RoutedEventArgs e)
-        {
-            RequestToken("openid api", OidcConstants.ResponseTypes.CodeIdTokenToken);
-        }
+            //Remove any & all children from our NavigationGrid that we use for navigation
+            NavigationGrid.Children.Clear();
 
-        private void RequestToken(string scope, string responseType)
-        {
-            var request = new RequestUrl($"{AppSettings.Settings.Endpoint}identity/connect/authorize");
-            var startUrl = request.CreateAuthorizeUrl(
-                clientId: AppSettings.Settings.OAuthClientId,
-                responseType: responseType,
-                scope: scope,
-                redirectUri: "oob://localhost/wpf.webview.client",
-                nonce: CryptoRandom.CreateUniqueId());
+            //Get an existing view from the registered view - view model pairs
+            var view = _viewViewModelPairs[navigationType];
 
-            _login.Show();
-            _login.Start(new Uri(startUrl), new Uri("oob://localhost/wpf.webview.client"));
-        }
-        
-        protected void SetProperty(object value, ref object property, [CallerMemberName]string caller = null)
-        {
-            if (property == value)
-                return;
+            //Set the data context of the view to the view model
+            view.DataContext = navigationArgs.ViewModel;
 
-            property = value;
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(caller));
+            //Subscribe to the navigated event, this will be called when the view model wants to navigate to the next page
+            navigationArgs.ViewModel.RequestNavigation += NavigateTo;
+
+            //Add the view that we recieved as a child of the NavigationGrid
+            NavigationGrid.Children.Add(view);
+
+            //Call the navigate to, in order to initialize the view model
+            await navigationArgs.ViewModel.NavigateTo();
         }
     }
 }

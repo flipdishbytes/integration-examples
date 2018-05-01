@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:WpfIntegration"
         mc:Ignorable="d"
-        Title="LoginWebView" Height="450" Width="800">
+        Title="LoginWebView" Height="600" Width="800">
     <Grid>
         <WebBrowser x:Name="webView" />
     </Grid>

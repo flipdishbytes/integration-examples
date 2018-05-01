@@ -92,6 +92,7 @@
     </ApplicationDefinition>
     <Compile Include="Infrastructure\BindableBase.cs" />
     <Compile Include="Infrastructure\RelayCommand.cs" />
+    <Compile Include="Infrastructure\AppNavigationEventArgs.cs" />
     <Compile Include="Interfaces\IViewModel.cs" />
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OrderReadyToProccessViewModel.cs" />
