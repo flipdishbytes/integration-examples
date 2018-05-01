@@ -13,7 +13,6 @@ namespace WpfIntegration.ViewModels
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
         private LoginWebView _login;
-        private AuthorizeResponse _response;
 
         public LoginViewModel()
         {
@@ -30,16 +29,19 @@ namespace WpfIntegration.ViewModels
         
         private void RequestToken(string scope, string responseType)
         {
+            var redirectUri = "oob://localhost/wpf.webview.client";
+
             var request = new RequestUrl($"{AppSettings.Settings.Endpoint}identity/connect/authorize");
+
             var startUrl = request.CreateAuthorizeUrl(
                 clientId: AppSettings.Settings.OAuthClientId,
                 responseType: responseType,
                 scope: scope,
-                redirectUri: "oob://localhost/wpf.webview.client",
+                redirectUri: redirectUri,
                 nonce: CryptoRandom.CreateUniqueId());
 
             _login.Show();
-            _login.Start(new Uri(startUrl), new Uri("oob://localhost/wpf.webview.client"));
+            _login.Start(new Uri(startUrl), new Uri(redirectUri));
         }
 
         public Task NavigateFrom()
@@ -56,8 +58,7 @@ namespace WpfIntegration.ViewModels
 
         private void _login_Done(object sender, AuthorizeResponse e)
         {
-            _response = e;
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel()));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(e.AccessToken)));
         }
     }
 }

@@ -37,39 +37,46 @@ namespace WpfIntegration
         /// <param name="navigationArgs">Arguments passed for navigation</param>
         private async void NavigateTo(object sender, AppNavigationEventArgs navigationArgs)
         {
-            //Get the type of the view model
-            var navigationType = navigationArgs.ViewModel.GetType();
-
-            //Search for the type in the registered pairs
-            if (!_viewViewModelPairs.ContainsKey(navigationType))
+            try
             {
-                throw new ArgumentOutOfRangeException(nameof(navigationArgs.ViewModel));
-            }
+                //Get the type of the view model
+                var navigationType = navigationArgs.ViewModel.GetType();
 
-            //If the triggering, make sure you call navigate from & unsubscribe from the event subscribed to below
-            if (sender is IViewModel currentViewModel)
+                //Search for the type in the registered pairs
+                if (!_viewViewModelPairs.ContainsKey(navigationType))
+                {
+                    throw new ArgumentOutOfRangeException(nameof(navigationArgs.ViewModel));
+                }
+
+                //If the triggering, make sure you call navigate from & unsubscribe from the event subscribed to below
+                if (sender is IViewModel currentViewModel)
+                {
+                    await currentViewModel.NavigateFrom();
+                    currentViewModel.RequestNavigation -= NavigateTo;
+                }
+
+                //Remove any & all children from our NavigationGrid that we use for navigation
+                NavigationGrid.Children.Clear();
+
+                //Get an existing view from the registered view - view model pairs
+                var view = _viewViewModelPairs[navigationType];
+
+                //Set the data context of the view to the view model
+                view.DataContext = navigationArgs.ViewModel;
+
+                //Subscribe to the navigated event, this will be called when the view model wants to navigate to the next page
+                navigationArgs.ViewModel.RequestNavigation += NavigateTo;
+
+                //Add the view that we recieved as a child of the NavigationGrid
+                NavigationGrid.Children.Add(view);
+
+                //Call the navigate to, in order to initialize the view model
+                await navigationArgs.ViewModel.NavigateTo();
+            }
+            catch(Exception e)
             {
-                await currentViewModel.NavigateFrom();
-                currentViewModel.RequestNavigation -= NavigateTo;
+                Console.WriteLine($"Unhandled exception occured: {e.Message}");
             }
-
-            //Remove any & all children from our NavigationGrid that we use for navigation
-            NavigationGrid.Children.Clear();
-
-            //Get an existing view from the registered view - view model pairs
-            var view = _viewViewModelPairs[navigationType];
-
-            //Set the data context of the view to the view model
-            view.DataContext = navigationArgs.ViewModel;
-
-            //Subscribe to the navigated event, this will be called when the view model wants to navigate to the next page
-            navigationArgs.ViewModel.RequestNavigation += NavigateTo;
-
-            //Add the view that we recieved as a child of the NavigationGrid
-            NavigationGrid.Children.Add(view);
-
-            //Call the navigate to, in order to initialize the view model
-            await navigationArgs.ViewModel.NavigateTo();
         }
     }
 }

@@ -26,5 +26,7 @@ namespace WpfIntegration.Infrastructure
         public string OAuthClientId => ConfigurationManager.AppSettings["OAuthClientId"] ?? throw new ArgumentException(nameof(OAuthClientId));
 
         public string OAuthSecretKey => ConfigurationManager.AppSettings["OAuthSecretKey"] ?? throw new ArgumentException(nameof(OAuthSecretKey));
+
+        public int PhysicalRestaurantId => int.Parse(ConfigurationManager.AppSettings["PhysicalRestaurantId"]);
     }
 }

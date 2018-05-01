@@ -3,7 +3,82 @@
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-      xmlns:local="clr-namespace:WpfIntegration.Views"
+      xmlns:viewmodels="clr-namespace:WpfIntegration.ViewModels"
       mc:Ignorable="d" 
-      d:DesignHeight="450" d:DesignWidth="800">
+      d:DesignHeight="768" d:DesignWidth="1024">
+    <Grid.Resources>
+        <DataTemplate x:Key="PreviousOrder" DataType="{x:Type viewmodels:OrderViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="50"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="{Binding Order.OrderId}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="{Binding Order.PlacedTime, StringFormat=dddd-MMMM-dd 0:HH:mm}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Grid.Column="2" Content="{Binding Order.OrderState}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Grid.Column="3" Content="{Binding Order.Amount, StringFormat=N2}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            </Grid>
+        </DataTemplate>
+        <DataTemplate x:Key="NewOrder" DataType="{x:Type viewmodels:OrderViewModel}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="50"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="150"/>
+                    <ColumnDefinition Width="120"/>
+                </Grid.ColumnDefinitions>
+                <Label Grid.Column="0" Content="{Binding Order.OrderId}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Grid.Column="1" Content="{Binding Order.PlacedTime, StringFormat=0:HH:mm}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Label Grid.Column="2" Content="{Binding Order.OrderState}" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+                <Button Grid.Column="3" Content="Accept\Decline"  HorizontalAlignment="Center" Width="90" Height="30" Command="{Binding ViewOrderCommand}"/>
+            </Grid>
+        </DataTemplate>
+    </Grid.Resources>
+    
+    <Grid.RowDefinitions>
+        <RowDefinition Height="1*"/>
+        <RowDefinition Height="10*"/>
+        <RowDefinition Height="2*"/>
+    </Grid.RowDefinitions>
+    <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="450"/>
+        <ColumnDefinition Width="1*"/>
+        <ColumnDefinition Width="500"/>
+    </Grid.ColumnDefinitions>
+    
+    <Label Grid.Column="0" Grid.Row="0" Content="Order History" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Margin="5">
+        <Grid Margin="5,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="50"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Order Id" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="1" Content="Placed On" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="2" Content="Order State" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="3" Content="Total" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+        </Grid>
+        <ListView ItemsSource="{Binding Orders}" ItemTemplate="{StaticResource PreviousOrder}"/>
+    </StackPanel>
+    
+    <Label Grid.Column="2" Grid.Row="0" Content="New Orders" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    <StackPanel Grid.Column="2" Grid.Row="1" Orientation="Vertical" Margin="5">
+        <Grid Margin="5,0,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="50"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="150"/>
+                <ColumnDefinition Width="120"/>
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" Content="Order Id" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="1" Content="Placed On" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="2" Content="Order State" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Left"/>
+            <Label Grid.Column="4" Content="Accept\Decline" FontSize="14" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+        </Grid>
+        <ListView ItemsSource="{Binding NewOrders}" ItemTemplate="{StaticResource NewOrder}"/>
+    </StackPanel>
 </Grid>
