@@ -12,7 +12,7 @@ namespace WpfIntegration
     /// <summary>
     /// Interaction logic for LoginWebView.xaml
     /// </summary>
-    public partial class LoginWebView : Window
+    public partial class LoginWebView
     {
         public event EventHandler<AuthorizeResponse> Done;
 

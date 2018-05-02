@@ -1,58 +1,47 @@
 ﻿using Flipdish.Api;
-using Flipdish.Client;
 using Flipdish.Model;
 using System;
-using System.Linq;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
+using System.Reactive.Concurrency;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
-using System.Reactive.Concurrency;
-using System.Windows.Input;
 
 namespace WpfIntegration.ViewModels
 {
     class OrdersViewModel : BindableBase, IViewModel
     {
-        private readonly string _accessToken;
-        private readonly int _physicalStoreId;
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
-
+        
+        private readonly int _physicalStoreId;
         private readonly OrdersApi _ordersApi;
-        private IDisposable _intervalObservable;
+
         private int _pageIndex = 1;
         private int _totalPages = 2;
         private const int OrdersPerPage = 17;
+        private IDisposable _intervalObservable;
 
-        public OrdersViewModel(string accessToken, int physicalStoreId)
+        public OrdersViewModel(int physicalStoreId)
         {
-            _accessToken = accessToken;
+            _ordersApi = new OrdersApi();
             _physicalStoreId = physicalStoreId;
             Orders = new ObservableCollection<OrderViewModel>();
             NewOrders = new ObservableCollection<OrderViewModel>();
 
             PreviousPageCommand = new RelayCommand(ExecutePreviousPageCommand, m => _pageIndex > 1);
             NextPageCommand = new RelayCommand(ExecuteNextPageCommand, m => _pageIndex < _totalPages);
-
-            //We require an Authorization header on our requests with the Bearer token
-            var defaultHeaders = new Dictionary<string, string>
-            {
-                { "Authorization", $"Bearer {accessToken}" }
-            };
-            
-            //Create a configuration for the API
-            var configuration = new Configuration
-            {
-                BasePath = AppSettings.Settings.Endpoint,
-                DefaultHeader = defaultHeaders
-            };
-
-            //Create a new instance of API with the configuration
-            _ordersApi = new OrdersApi(configuration);
         }
 
+        public ObservableCollection<OrderViewModel> Orders { get; }
+        public ObservableCollection<OrderViewModel> NewOrders { get; }
+
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
+        
         private async void ExecutePreviousPageCommand(object obj)
         {
             _pageIndex--;
@@ -64,50 +53,7 @@ namespace WpfIntegration.ViewModels
             _pageIndex++;
             await LoadOrders();
         }
-
-        private void NewOrder_OrderViewRequested(object sender, Order e)
-        {
-            //Get the view model associated with this order
-            var orderViewModel = NewOrders.FirstOrDefault(m => m.Order.OrderId == e.OrderId);
-
-            //Unsubscribe from the event & remove the view model from new orders
-            if (orderViewModel != null)
-            {
-                orderViewModel.OrderViewRequested -= NewOrder_OrderViewRequested;
-                NewOrders.Remove(orderViewModel);
-            }
-
-            //Navigate to the Order Ready to Process and pass this Order
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_accessToken, _physicalStoreId, e)));
-        }
-
-        public ObservableCollection<OrderViewModel> Orders { get; }
-        public ObservableCollection<OrderViewModel> NewOrders { get; }
-
-        public ICommand PreviousPageCommand { get; }
-        public ICommand NextPageCommand { get; }
-
-        public Task NavigateFrom()
-        {
-            //We dispose the observable that we create when we navigate to this page, to make sure that it doesn't run in the background
-            _intervalObservable.Dispose();
-
-            return Task.CompletedTask;
-        }
-
-        public async Task NavigateTo()
-        {
-            //Get all orders
-            await LoadOrders();
-
-            //This piece of code runs every 5 seconds, it checks if any orders are ready to be processed by the restaurant
-            //It executes OnNextInterval every 5 seconds and subscribes & observes on current thread
-            _intervalObservable = Observable.Interval(TimeSpan.FromSeconds(5))
-                .SubscribeOn(Scheduler.CurrentThread)
-                .ObserveOn(DispatcherScheduler.Current)
-                .Subscribe(async (i) => await OnNextInterval());
-        }
-
+        
         private async Task OnNextInterval()
         {
             try
@@ -127,6 +73,22 @@ namespace WpfIntegration.ViewModels
             {
                 // ignored
             }
+        }
+
+        private void NewOrder_OrderViewRequested(object sender, Order e)
+        {
+            //Get the view model associated with this order
+            var orderViewModel = NewOrders.FirstOrDefault(m => m.Order.OrderId == e.OrderId);
+
+            //Unsubscribe from the event & remove the view model from new orders
+            if (orderViewModel != null)
+            {
+                orderViewModel.OrderViewRequested -= NewOrder_OrderViewRequested;
+                NewOrders.Remove(orderViewModel);
+            }
+
+            //Navigate to the Order Ready to Process and pass this Order
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_physicalStoreId, e)));
         }
 
         private async Task LoadOrders()
@@ -165,6 +127,27 @@ namespace WpfIntegration.ViewModels
             var restaurants = new List<int?> { _physicalStoreId };
             var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, new List<string> { "ReadyToProcess" }).ConfigureAwait(false);
             return ordersResponse.Data;
+        }
+
+        public Task NavigateFrom()
+        {
+            //We dispose the observable that we create when we navigate to this page, to make sure that it doesn't run in the background
+            _intervalObservable.Dispose();
+
+            return Task.CompletedTask;
+        }
+
+        public async Task NavigateTo()
+        {
+            //Get all orders
+            await LoadOrders();
+
+            //This piece of code runs every 5 seconds, it checks if any orders are ready to be processed by the restaurant
+            //It executes OnNextInterval every 5 seconds and subscribes & observes on current thread
+            _intervalObservable = Observable.Interval(TimeSpan.FromSeconds(5))
+                .SubscribeOn(Scheduler.CurrentThread)
+                .ObserveOn(DispatcherScheduler.Current)
+                .Subscribe(async (i) => await OnNextInterval());
         }
     }
 }

@@ -3,6 +3,7 @@ using IdentityModel.Client;
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using Flipdish.Client;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
 
@@ -44,6 +45,16 @@ namespace WpfIntegration.ViewModels
             _login.Start(new Uri(startUrl), new Uri(redirectUri));
         }
 
+        private void _login_Done(object sender, AuthorizeResponse e)
+        {
+            //Set default API configuration base path
+            Configuration.Default.BasePath = AppSettings.Settings.Endpoint;
+            //Add default API configuration header (this header is required to work with the API)
+            Configuration.Default.DefaultHeader.Add("Authorization", $"Bearer {e.AccessToken}");
+
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel()));
+        }
+
         public Task NavigateFrom()
         {
             _login.Done -= _login_Done;
@@ -54,11 +65,6 @@ namespace WpfIntegration.ViewModels
         {
             _login.Done += _login_Done;
             return Task.CompletedTask;
-        }
-
-        private void _login_Done(object sender, AuthorizeResponse e)
-        {
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel(e.AccessToken)));
         }
     }
 }

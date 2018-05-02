@@ -11,6 +11,12 @@ namespace WpfIntegration.ViewModels
 
         private Order _order;
 
+        public OrderViewModel(Order o)
+        {
+            Order = o;
+            ViewOrderCommand = new RelayCommand(ExecuteViewOrderCommand);
+        }
+        
         public Order Order
         {
             get => _order;
@@ -18,12 +24,6 @@ namespace WpfIntegration.ViewModels
         }
 
         public ICommand ViewOrderCommand { get; }
-
-        public OrderViewModel(Order o)
-        {
-            Order = o;
-            ViewOrderCommand = new RelayCommand(ExecuteViewOrderCommand);
-        }
 
         private void ExecuteViewOrderCommand(object obj)
         {

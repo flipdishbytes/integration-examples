@@ -1,11 +1,9 @@
-﻿using System.Windows.Controls;
-
-namespace WpfIntegration.Views
+﻿namespace WpfIntegration.Views
 {
     /// <summary>
     /// Interaction logic for StoresView.xaml
     /// </summary>
-    public partial class StoresView : Grid
+    public partial class StoresView
     {
         public StoresView()
         {

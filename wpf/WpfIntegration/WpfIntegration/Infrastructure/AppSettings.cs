@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Configuration;
-using WpfIntegration.Interfaces;
 
 namespace WpfIntegration.Infrastructure
 {
-    class AppSettings : IAppSettings
+    /// <summary>
+    /// This is a class used for reading the properties
+    /// </summary>
+    class AppSettings
     {
-        private static IAppSettings _settings;
+        private static AppSettings _settings;
 
-        public static IAppSettings Settings
+        public static AppSettings Settings
         {
             get
             {

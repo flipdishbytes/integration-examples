@@ -1,11 +1,10 @@
-﻿using Flipdish.Model;
+﻿using Flipdish.Api;
+using Flipdish.Model;
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using Flipdish.Api;
-using Flipdish.Client;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
 
@@ -14,8 +13,7 @@ namespace WpfIntegration.ViewModels
     class OrderReadyToProccessViewModel : BindableBase, IViewModel
     {
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
-
-        private readonly string _accessToken;
+        
         private readonly int _storeId;
         private readonly Order _order;
         private readonly OrdersApi _ordersApi;
@@ -23,30 +21,13 @@ namespace WpfIntegration.ViewModels
         private int _estimatedMinutesForDeliveryIndex;
         private Reject.RejectReasonEnum _rejectReason;
 
-        public OrderReadyToProccessViewModel(string accessToken, int storeId, Order order)
+        public OrderReadyToProccessViewModel(int storeId, Order order)
         {
-            _accessToken = accessToken;
             _storeId = storeId;
             _order = order;
+            _ordersApi = new OrdersApi();
+
             OrderSummary = BuildOrderSummary();
-            AcceptCommand = new RelayCommand(ExecuteAcceptCommand);
-            DeclineCommand = new RelayCommand(ExecuteDeclineCommand);
-
-            //We require an Authorization header on our requests with the Bearer token
-            var defaultHeaders = new Dictionary<string, string>
-            {
-                { "Authorization", $"Bearer {accessToken}" }
-            };
-
-            //Create a configuration for the API
-            var configuration = new Configuration
-            {
-                BasePath = AppSettings.Settings.Endpoint,
-                DefaultHeader = defaultHeaders
-            };
-
-            //Create a new instance of API with the configuration
-            _ordersApi = new OrdersApi(configuration);
             RejectValues = Enum.GetValues(typeof(Reject.RejectReasonEnum));
             EstimatedMinutesForDeliveryValues = new List<int>
             {
@@ -55,11 +36,14 @@ namespace WpfIntegration.ViewModels
                 60,
                 75
             };
+
+            AcceptCommand = new RelayCommand(ExecuteAcceptCommand);
+            DeclineCommand = new RelayCommand(ExecuteDeclineCommand);
         }
         
         public string OrderSummary { get; }
         
-        public List<int> EstimatedMinutesForDeliveryValues { get; set; }
+        public List<int> EstimatedMinutesForDeliveryValues { get; }
         public int EstimatedMinutesForDeliveryIndex
         {
             get => _estimatedMinutesForDeliveryIndex;
@@ -79,13 +63,13 @@ namespace WpfIntegration.ViewModels
         private async void ExecuteAcceptCommand(object obj)
         {
             await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDeliveryValues[EstimatedMinutesForDeliveryIndex]));
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken, _storeId)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_storeId)));
         }
 
         private async void ExecuteDeclineCommand(object obj)
         {
             await _ordersApi.RejectOrderAsync(_order.OrderId, new Reject(RejectReason));
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken, _storeId)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_storeId)));
         }
         
         private string BuildOrderSummary()

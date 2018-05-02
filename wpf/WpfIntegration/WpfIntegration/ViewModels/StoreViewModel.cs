@@ -7,15 +7,15 @@ namespace WpfIntegration.ViewModels
     {
         private Store _store;
 
+        public StoreViewModel(Store store)
+        {
+            Store = store;
+        }
+
         public Store Store
         {
             get => _store;
             set => SetProperty(ref _store, value);
-        }
-
-        public StoreViewModel(Store store)
-        {
-            Store = store;
         }
     }
 }

@@ -1,11 +1,9 @@
-﻿using System.Windows.Controls;
-
-namespace WpfIntegration.Views
+﻿namespace WpfIntegration.Views
 {
     /// <summary>
     /// Interaction logic for LoginView.xaml
     /// </summary>
-    public partial class LoginView : Grid
+    public partial class LoginView
     {
         public LoginView()
         {

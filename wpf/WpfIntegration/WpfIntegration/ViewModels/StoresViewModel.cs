@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Windows.Input;
-using Flipdish.Api;
+﻿using Flipdish.Api;
 using Flipdish.Client;
 using Flipdish.Model;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Threading.Tasks;
+using System.Windows.Input;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
 
@@ -14,58 +13,44 @@ namespace WpfIntegration.ViewModels
 {
     class StoresViewModel : BindableBase, IViewModel
     {
+        private const int StoresPerPage = 15;
+
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
         private readonly StoresApi _storesApi;
-        private readonly string _accessToken;
-        private const int StoresPerPage = 15;
+
         private int _pageIndex = 1;
         private int _totalPages;
         private StoreViewModel _selectedStore;
         private string _searchQuery;
 
-        public StoresViewModel(string accessToken)
+        public StoresViewModel()
         {
-            _accessToken = accessToken;
+            _storesApi = new StoresApi();
+
             Stores = new ObservableCollection<StoreViewModel>();
             PreviousPageCommand = new RelayCommand(ExecutePreviousPageCommand, m => _pageIndex > 1);
             NextPageCommand = new RelayCommand(ExecuteNextPageCommand, m => _pageIndex < _totalPages); 
             SelectStoreCommand = new RelayCommand(ExecuteSelectStoreCommand, m => SelectedStore != null);
             SearchCommand = new RelayCommand(ExecuteSearchCommand);
-
-            //We require an Authorization header on our requests with the Bearer token
-            var defaultHeaders = new Dictionary<string, string>
-            {
-                { "Authorization", $"Bearer {accessToken}" }
-            };
-
-            //Create a configuration for the API
-            var configuration = new Configuration
-            {
-                BasePath = AppSettings.Settings.Endpoint,
-                DefaultHeader = defaultHeaders
-            };
-
-            //Create a new instance of API with the configuration
-            _storesApi = new StoresApi(configuration);
         }
-        
-        public string SearchQuery
-        {
-            get => _searchQuery;
-            set => SetProperty(ref _searchQuery, value);
-        }
+
+        public ObservableCollection<StoreViewModel> Stores { get; }
         public StoreViewModel SelectedStore
         {
             get => _selectedStore;
             set => SetProperty(ref _selectedStore, value);
         }
-        public ObservableCollection<StoreViewModel> Stores { get; }
+        public string SearchQuery
+        {
+            get => _searchQuery;
+            set => SetProperty(ref _searchQuery, value);
+        }
         public ICommand PreviousPageCommand { get; }
         public ICommand NextPageCommand { get; }
         public ICommand SelectStoreCommand { get; }
         public ICommand SearchCommand { get; }
-
+        
         private async void ExecutePreviousPageCommand(object obj)
         {
             _pageIndex--;
@@ -78,28 +63,18 @@ namespace WpfIntegration.ViewModels
             await UpdateStores();
         }
 
-        private void ExecuteSelectStoreCommand(object obj)
-        {
-            if (SelectedStore.Store.StoreId.HasValue)
-            {
-                RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken, SelectedStore.Store.StoreId.Value)));
-            }
-        }
-
         private async void ExecuteSearchCommand(object obj)
         {
             _pageIndex = 1;
             await UpdateStores();
         }
 
-        public Task NavigateFrom()
+        private void ExecuteSelectStoreCommand(object obj)
         {
-            return Task.CompletedTask;
-        }
-
-        public Task NavigateTo()
-        {
-            return Task.CompletedTask;
+            if (SelectedStore.Store.StoreId.HasValue)
+            {
+                RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(SelectedStore.Store.StoreId.Value)));
+            }
         }
 
         private async Task UpdateStores()
@@ -132,6 +107,16 @@ namespace WpfIntegration.ViewModels
             }
 
             return storesResponse.Data;
+        }
+
+        public Task NavigateFrom()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task NavigateTo()
+        {
+            return Task.CompletedTask;
         }
     }
 }
