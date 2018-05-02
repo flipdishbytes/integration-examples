@@ -4,6 +4,5 @@
     {
         string Endpoint { get; }
         string ClientId { get; }
-        int PhysicalRestaurantId { get; }
     }
 }

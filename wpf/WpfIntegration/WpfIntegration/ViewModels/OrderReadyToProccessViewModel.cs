@@ -16,15 +16,17 @@ namespace WpfIntegration.ViewModels
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
         private readonly string _accessToken;
+        private readonly int _storeId;
         private readonly Order _order;
         private readonly OrdersApi _ordersApi;
 
         private int _estimatedMinutesForDeliveryIndex;
         private Reject.RejectReasonEnum _rejectReason;
 
-        public OrderReadyToProccessViewModel(string accessToken, Order order)
+        public OrderReadyToProccessViewModel(string accessToken, int storeId, Order order)
         {
             _accessToken = accessToken;
+            _storeId = storeId;
             _order = order;
             OrderSummary = BuildOrderSummary();
             AcceptCommand = new RelayCommand(ExecuteAcceptCommand);
@@ -77,13 +79,13 @@ namespace WpfIntegration.ViewModels
         private async void ExecuteAcceptCommand(object obj)
         {
             await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDeliveryValues[EstimatedMinutesForDeliveryIndex]));
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken, _storeId)));
         }
 
         private async void ExecuteDeclineCommand(object obj)
         {
             await _ordersApi.RejectOrderAsync(_order.OrderId, new Reject(RejectReason));
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken, _storeId)));
         }
         
         private string BuildOrderSummary()

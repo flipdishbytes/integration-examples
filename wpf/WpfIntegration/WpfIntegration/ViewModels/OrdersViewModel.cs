@@ -17,17 +17,19 @@ namespace WpfIntegration.ViewModels
     class OrdersViewModel : BindableBase, IViewModel
     {
         private readonly string _accessToken;
+        private readonly int _physicalStoreId;
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
         private readonly OrdersApi _ordersApi;
         private IDisposable _intervalObservable;
-        private int _pageIndex;
-        private int _totalPages;
-        private const int OrdersPerPage = 25;
+        private int _pageIndex = 1;
+        private int _totalPages = 2;
+        private const int OrdersPerPage = 17;
 
-        public OrdersViewModel(string accessToken)
+        public OrdersViewModel(string accessToken, int physicalStoreId)
         {
             _accessToken = accessToken;
+            _physicalStoreId = physicalStoreId;
             Orders = new ObservableCollection<OrderViewModel>();
             NewOrders = new ObservableCollection<OrderViewModel>();
 
@@ -54,66 +56,13 @@ namespace WpfIntegration.ViewModels
         private async void ExecutePreviousPageCommand(object obj)
         {
             _pageIndex--;
-            var orders = await GetOrdersAsync(_pageIndex);
-            
-            Orders.Clear();
-
-            foreach (var order in orders)
-            {
-                Orders.Add(new OrderViewModel(order));
-            }
+            await LoadOrders();
         }
 
         private async void ExecuteNextPageCommand(object obj)
         {
             _pageIndex++;
-            var orders = await GetOrdersAsync(_pageIndex);
-
-            Orders.Clear();
-
-            foreach (var order in orders)
-            {
-                Orders.Add(new OrderViewModel(order));
-            }
-        }
-
-        public ObservableCollection<OrderViewModel> Orders { get; }
-        public ObservableCollection<OrderViewModel> NewOrders { get; }
-
-        public ICommand PreviousPageCommand { get; }
-        public ICommand NextPageCommand { get; }
-
-        public Task NavigateFrom()
-        {
-            //We dispose the observable that we create when we navigate to this page, to make sure that it doesn't run in the background
-            _intervalObservable.Dispose();
-
-            return Task.CompletedTask;
-        }
-        public async Task NavigateTo()
-        {
-            //Get all orders
-            var orders = await GetOrdersAsync(1);
-
-            foreach (var order in orders)
-            {
-                Orders.Add(new OrderViewModel(order));
-            }
-
-            //This piece of code runs every 5 seconds, it checks if any orders are ready to be processed by the restaurant
-            _intervalObservable = Observable.Interval(TimeSpan.FromSeconds(5)).SubscribeOn(Scheduler.CurrentThread).ObserveOn(DispatcherScheduler.Current).Subscribe(async i => 
-            {
-                var readyOrders = await GetReadyOrdersAsync();
-
-                readyOrders = readyOrders.Where(r => NewOrders.All(o => o.Order.OrderId != r.OrderId));
-
-                foreach (var order in readyOrders)
-                {
-                    var newOrder = new OrderViewModel(order);
-                    newOrder.OrderViewRequested += NewOrder_OrderViewRequested;
-                    NewOrders.Add(newOrder);
-                }
-            });
+            await LoadOrders();
         }
 
         private void NewOrder_OrderViewRequested(object sender, Order e)
@@ -129,12 +78,77 @@ namespace WpfIntegration.ViewModels
             }
 
             //Navigate to the Order Ready to Process and pass this Order
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_accessToken, e)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_accessToken, _physicalStoreId, e)));
+        }
+
+        public ObservableCollection<OrderViewModel> Orders { get; }
+        public ObservableCollection<OrderViewModel> NewOrders { get; }
+
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
+
+        public Task NavigateFrom()
+        {
+            //We dispose the observable that we create when we navigate to this page, to make sure that it doesn't run in the background
+            _intervalObservable.Dispose();
+
+            return Task.CompletedTask;
+        }
+
+        public async Task NavigateTo()
+        {
+            //Get all orders
+            await LoadOrders();
+
+            //This piece of code runs every 5 seconds, it checks if any orders are ready to be processed by the restaurant
+            //It executes OnNextInterval every 5 seconds and subscribes & observes on current thread
+            _intervalObservable = Observable.Interval(TimeSpan.FromSeconds(5))
+                .SubscribeOn(Scheduler.CurrentThread)
+                .ObserveOn(DispatcherScheduler.Current)
+                .Subscribe(async (i) => await OnNextInterval());
+        }
+
+        private async Task OnNextInterval()
+        {
+            try
+            {
+                var readyOrders = await GetReadyOrdersAsync();
+
+                readyOrders = readyOrders.Where(r => NewOrders.All(o => o.Order.OrderId != r.OrderId));
+
+                foreach (var order in readyOrders)
+                {
+                    var newOrder = new OrderViewModel(order);
+                    newOrder.OrderViewRequested += NewOrder_OrderViewRequested;
+                    NewOrders.Add(newOrder);
+                }
+            }
+            catch
+            {
+                // ignored
+            }
+        }
+
+        private async Task LoadOrders()
+        {
+            try
+            {
+                var orders = await GetOrdersAsync(_pageIndex);
+
+                foreach (var order in orders)
+                {
+                    Orders.Add(new OrderViewModel(order));
+                }
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
         {
-            var restaurants = new List<int?> { AppSettings.Settings.PhysicalRestaurantId };
+            var restaurants = new List<int?> { _physicalStoreId };
             var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, null, page, OrdersPerPage).ConfigureAwait(false);
 
             if (ordersResponse.TotalRecordCount.HasValue)
@@ -148,7 +162,7 @@ namespace WpfIntegration.ViewModels
 
         private async Task<IEnumerable<Order>> GetReadyOrdersAsync()
         {
-            var restaurants = new List<int?> { AppSettings.Settings.PhysicalRestaurantId };
+            var restaurants = new List<int?> { _physicalStoreId };
             var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, new List<string> { "ReadyToProcess" }).ConfigureAwait(false);
             return ordersResponse.Data;
         }

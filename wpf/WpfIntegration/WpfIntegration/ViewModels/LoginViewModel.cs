@@ -58,7 +58,7 @@ namespace WpfIntegration.ViewModels
 
         private void _login_Done(object sender, AuthorizeResponse e)
         {
-            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(e.AccessToken)));
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel(e.AccessToken)));
         }
     }
 }

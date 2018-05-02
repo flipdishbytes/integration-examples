@@ -15,7 +15,7 @@ namespace WpfIntegration
     public partial class MainWindow : Window
     {
         //This is used to hold our registered navigation pairs
-        private Dictionary<Type, Grid> _viewViewModelPairs = new Dictionary<Type, Grid>();
+        private readonly Dictionary<Type, Grid> _viewViewModelPairs = new Dictionary<Type, Grid>();
         
         public MainWindow()
         {
@@ -25,6 +25,7 @@ namespace WpfIntegration
             _viewViewModelPairs.Add(typeof(LoginViewModel), new LoginView());
             _viewViewModelPairs.Add(typeof(OrdersViewModel), new OrdersView());
             _viewViewModelPairs.Add(typeof(OrderReadyToProccessViewModel), new OrderReadyToProccessView());
+            _viewViewModelPairs.Add(typeof(StoresViewModel), new StoresView());
 
             //Navigate to the first view model, from here on navigation will be handled in the view models
             NavigateTo(this, new AppNavigationEventArgs(new LoginViewModel()));
