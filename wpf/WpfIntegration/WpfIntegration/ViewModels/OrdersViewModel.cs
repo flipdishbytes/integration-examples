@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using WpfIntegration.Infrastructure;
 using WpfIntegration.Interfaces;
 using System.Reactive.Concurrency;
+using System.Windows.Input;
 
 namespace WpfIntegration.ViewModels
 {
@@ -20,12 +21,18 @@ namespace WpfIntegration.ViewModels
 
         private readonly OrdersApi _ordersApi;
         private IDisposable _intervalObservable;
+        private int _pageIndex;
+        private int _totalPages;
+        private const int OrdersPerPage = 25;
 
         public OrdersViewModel(string accessToken)
         {
             _accessToken = accessToken;
             Orders = new ObservableCollection<OrderViewModel>();
             NewOrders = new ObservableCollection<OrderViewModel>();
+
+            PreviousPageCommand = new RelayCommand(ExecutePreviousPageCommand, m => _pageIndex > 1);
+            NextPageCommand = new RelayCommand(ExecuteNextPageCommand, m => _pageIndex < _totalPages);
 
             //We require an Authorization header on our requests with the Bearer token
             var defaultHeaders = new Dictionary<string, string>
@@ -44,8 +51,37 @@ namespace WpfIntegration.ViewModels
             _ordersApi = new OrdersApi(configuration);
         }
 
+        private async void ExecutePreviousPageCommand(object obj)
+        {
+            _pageIndex--;
+            var orders = await GetOrdersAsync(_pageIndex);
+            
+            Orders.Clear();
+
+            foreach (var order in orders)
+            {
+                Orders.Add(new OrderViewModel(order));
+            }
+        }
+
+        private async void ExecuteNextPageCommand(object obj)
+        {
+            _pageIndex++;
+            var orders = await GetOrdersAsync(_pageIndex);
+
+            Orders.Clear();
+
+            foreach (var order in orders)
+            {
+                Orders.Add(new OrderViewModel(order));
+            }
+        }
+
         public ObservableCollection<OrderViewModel> Orders { get; }
         public ObservableCollection<OrderViewModel> NewOrders { get; }
+
+        public ICommand PreviousPageCommand { get; }
+        public ICommand NextPageCommand { get; }
 
         public Task NavigateFrom()
         {
@@ -57,7 +93,7 @@ namespace WpfIntegration.ViewModels
         public async Task NavigateTo()
         {
             //Get all orders
-            var orders = await GetOrdersAsync(1, 200);
+            var orders = await GetOrdersAsync(1);
 
             foreach (var order in orders)
             {
@@ -96,10 +132,17 @@ namespace WpfIntegration.ViewModels
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_accessToken, e)));
         }
 
-        private async Task<IEnumerable<Order>> GetOrdersAsync(int page, int limit)
+        private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
         {
             var restaurants = new List<int?> { AppSettings.Settings.PhysicalRestaurantId };
-            var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, null, page, limit).ConfigureAwait(false);
+            var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, null, page, OrdersPerPage).ConfigureAwait(false);
+
+            if (ordersResponse.TotalRecordCount.HasValue)
+            {
+                var totalRecords = ordersResponse.TotalRecordCount.Value;
+                _totalPages = totalRecords / OrdersPerPage + (totalRecords % OrdersPerPage > 0 ? 1 : 0);
+            }
+
             return ordersResponse.Data.Where(o => o.OrderState != Order.OrderStateEnum.ReadyToProcess);
         }
 
