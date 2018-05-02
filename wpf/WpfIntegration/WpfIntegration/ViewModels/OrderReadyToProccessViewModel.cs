@@ -93,7 +93,7 @@ namespace WpfIntegration.ViewModels
             sb.Append("Customer Name: ").AppendLine(_order.Customer.Name);
             sb.Append("Customer EmailAddress: ").AppendLine(_order.Customer.EmailAddress);
             sb.Append("Customer PhoneNumber: ").AppendLine(_order.Customer.PhoneNumber);
-            sb.Append("Delivery Location:").Append(_order.DeliveryLocation.Street).Append(",").AppendLine(_order.DeliveryLocation.Town);
+            sb.Append("Delivery Type:").AppendLine(_order.DeliveryType?.ToString() ?? string.Empty);
             sb.Append("Order Id: ").AppendLine(_order.OrderId.ToString());
             sb.Append("Order Total: ").AppendLine(_order.Amount.ToString());
             sb.Append("Chef's Notes: ").AppendLine(_order.ChefNote);
