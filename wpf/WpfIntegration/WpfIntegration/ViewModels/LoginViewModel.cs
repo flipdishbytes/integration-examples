@@ -43,6 +43,8 @@ namespace WpfIntegration.ViewModels
                 redirectUri: redirectUri,
                 nonce: CryptoRandom.CreateUniqueId());
 
+            _login = new LoginWebView();
+            _login.Done += _login_Done;
             _login.Show();
             _login.Start(new Uri(startUrl), new Uri(redirectUri));
         }
@@ -58,20 +60,19 @@ namespace WpfIntegration.ViewModels
             //Add default API configuration header (this header is required to work with the API)
             Configuration.Default.DefaultHeader.Add("Authorization", $"Bearer {e.AccessToken}");
 
+            _login.Done -= _login_Done;
+            _login.Close();
+
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel()));
         }
 
         public Task NavigateFrom()
         {
-            _login.Done -= _login_Done;
-            _login.Close();
             return Task.CompletedTask;
         }
 
         public Task NavigateTo()
         {
-            _login = new LoginWebView();
-            _login.Done += _login_Done;
             return Task.CompletedTask;
         }
     }

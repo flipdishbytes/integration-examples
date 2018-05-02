@@ -22,11 +22,6 @@ namespace WpfIntegration
         {
             InitializeComponent();
             webView.Navigating += WebView_Navigating;
-
-            Closing += (s, e) =>
-            {
-                Hide(e);
-            };
         }
 
         public void Start(Uri startUri, Uri callbackUri)
