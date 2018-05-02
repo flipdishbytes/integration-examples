@@ -18,9 +18,10 @@ namespace WpfIntegration.ViewModels
         private readonly string _accessToken;
         private readonly Order _order;
         private readonly OrdersApi _ordersApi;
-        private int _estimatedMinutesForDelivery;
+
+        private int _estimatedMinutesForDeliveryIndex;
         private Reject.RejectReasonEnum _rejectReason;
-        
+
         public OrderReadyToProccessViewModel(string accessToken, Order order)
         {
             _accessToken = accessToken;
@@ -44,16 +45,26 @@ namespace WpfIntegration.ViewModels
 
             //Create a new instance of API with the configuration
             _ordersApi = new OrdersApi(configuration);
+            RejectValues = Enum.GetValues(typeof(Reject.RejectReasonEnum));
+            EstimatedMinutesForDeliveryValues = new List<int>
+            {
+                30,
+                45,
+                60,
+                75
+            };
         }
-
+        
         public string OrderSummary { get; }
-
-        public int EstimatedMinutesForDelivery
+        
+        public List<int> EstimatedMinutesForDeliveryValues { get; set; }
+        public int EstimatedMinutesForDeliveryIndex
         {
-            get => _estimatedMinutesForDelivery;
-            set => SetProperty(ref _estimatedMinutesForDelivery, value);
+            get => _estimatedMinutesForDeliveryIndex;
+            set => SetProperty(ref _estimatedMinutesForDeliveryIndex, value);
         }
 
+        public Array RejectValues { get; }
         public Reject.RejectReasonEnum RejectReason
         {
             get => _rejectReason;
@@ -65,7 +76,7 @@ namespace WpfIntegration.ViewModels
 
         private async void ExecuteAcceptCommand(object obj)
         {
-            await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDelivery));
+            await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDeliveryValues[EstimatedMinutesForDeliveryIndex]));
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
         }
 
@@ -74,16 +85,16 @@ namespace WpfIntegration.ViewModels
             await _ordersApi.RejectOrderAsync(_order.OrderId, new Reject(RejectReason));
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_accessToken)));
         }
-
+        
         private string BuildOrderSummary()
         {
             if (_order == null) return string.Empty;
 
             var sb = new StringBuilder();
             sb.Append("Customer Name: ").AppendLine(_order.Customer.Name);
-            sb.Append("Customer Name: ").AppendLine(_order.Customer.EmailAddress);
-            sb.Append("Customer Name: ").AppendLine(_order.Customer.PhoneNumber);
-            sb.Append("Customer Location:").Append(_order.CustomerLocation.Latitude).Append(".").AppendLine(_order.CustomerLocation.Longitude.ToString());
+            sb.Append("Customer EmailAddress: ").AppendLine(_order.Customer.EmailAddress);
+            sb.Append("Customer PhoneNumber: ").AppendLine(_order.Customer.PhoneNumber);
+            sb.Append("Delivery Location:").Append(_order.DeliveryLocation.Street).Append(",").AppendLine(_order.DeliveryLocation.Town);
             sb.Append("Order Id: ").AppendLine(_order.OrderId.ToString());
             sb.Append("Order Total: ").AppendLine(_order.Amount.ToString());
             sb.Append("Chef's Notes: ").AppendLine(_order.ChefNote);
@@ -91,10 +102,10 @@ namespace WpfIntegration.ViewModels
 
             foreach (var item in _order.OrderItems)
             {
-                sb.Append("   ").Append("Item Name: ").Append(item.Name);
+                sb.Append("  ").Append("Item Name: ").AppendLine(item.Name);
                 foreach (var option in item.OrderItemOptions)
                 {
-                    sb.Append("      ").Append("Option: ").Append(option.Name);
+                    sb.Append("    ").Append("Option: ").AppendLine(option.Name);
                 }
             }
 

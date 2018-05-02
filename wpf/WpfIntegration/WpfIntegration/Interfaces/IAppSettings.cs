@@ -3,8 +3,7 @@
     interface IAppSettings
     {
         string Endpoint { get; }
-        string OAuthClientId { get; }
-        string OAuthSecretKey { get; }
+        string ClientId { get; }
         int PhysicalRestaurantId { get; }
     }
 }

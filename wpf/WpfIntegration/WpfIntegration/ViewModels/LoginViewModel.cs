@@ -12,7 +12,7 @@ namespace WpfIntegration.ViewModels
     {
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
-        private LoginWebView _login;
+        private readonly LoginWebView _login;
 
         public LoginViewModel()
         {
@@ -34,7 +34,7 @@ namespace WpfIntegration.ViewModels
             var request = new RequestUrl($"{AppSettings.Settings.Endpoint}identity/connect/authorize");
 
             var startUrl = request.CreateAuthorizeUrl(
-                clientId: AppSettings.Settings.OAuthClientId,
+                clientId: AppSettings.Settings.ClientId,
                 responseType: responseType,
                 scope: scope,
                 redirectUri: redirectUri,
