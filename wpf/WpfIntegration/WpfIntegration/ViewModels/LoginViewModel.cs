@@ -28,6 +28,9 @@ namespace WpfIntegration.ViewModels
             RequestToken("openid api", OidcConstants.ResponseTypes.CodeIdTokenToken);
         }
         
+        /// <summary>
+        /// Creates the authorization request and shows the popup with the Web View
+        /// </summary>
         private void RequestToken(string scope, string responseType)
         {
             var redirectUri = "oob://localhost/wpf.webview.client";
@@ -45,6 +48,10 @@ namespace WpfIntegration.ViewModels
             _login.Start(new Uri(startUrl), new Uri(redirectUri));
         }
 
+        /// <summary>
+        /// Occurs when login page is done
+        /// Sets basic Configuration for the Flipdish API and navigates to the Stores View
+        /// </summary>
         private void _login_Done(object sender, AuthorizeResponse e)
         {
             //Set default API configuration base path

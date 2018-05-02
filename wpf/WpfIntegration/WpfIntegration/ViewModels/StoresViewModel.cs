@@ -1,5 +1,4 @@
 ﻿using Flipdish.Api;
-using Flipdish.Client;
 using Flipdish.Model;
 using System;
 using System.Collections.Generic;
@@ -26,6 +25,7 @@ namespace WpfIntegration.ViewModels
 
         public StoresViewModel()
         {
+            //Create the stores api
             _storesApi = new StoresApi();
 
             Stores = new ObservableCollection<StoreViewModel>();
@@ -50,25 +50,45 @@ namespace WpfIntegration.ViewModels
         public ICommand NextPageCommand { get; }
         public ICommand SelectStoreCommand { get; }
         public ICommand SearchCommand { get; }
-        
+
+        /// <summary>
+        /// Go to previous page of stores
+        /// Can execute checks that the index will not fall out of bounds
+        /// </summary>
+        /// <param name="obj">Nothing</param>
         private async void ExecutePreviousPageCommand(object obj)
         {
             _pageIndex--;
             await UpdateStores();
         }
 
+        /// <summary>
+        /// Go to next page of stores
+        /// Can execute checks that the index will not fall out of bounds
+        /// </summary>
+        /// <param name="obj">Nothing</param>
         private async void ExecuteNextPageCommand(object obj)
         {
             _pageIndex++;
             await UpdateStores();
         }
 
+        /// <summary>
+        /// Execute a search command and set the page index to 1
+        /// When we are searching we want to make sure to be on the first page of the search
+        /// </summary>
+        /// <param name="obj">Nothing</param>
         private async void ExecuteSearchCommand(object obj)
         {
             _pageIndex = 1;
             await UpdateStores();
         }
 
+        /// <summary>
+        /// Execute select store command, If StoreId is not null then we navigate to the Orders View.
+        /// The Can Execute checks if SelectedStore is not null.
+        /// </summary>
+        /// <param name="obj"></param>
         private void ExecuteSelectStoreCommand(object obj)
         {
             if (SelectedStore.Store.StoreId.HasValue)
@@ -77,6 +97,9 @@ namespace WpfIntegration.ViewModels
             }
         }
 
+        /// <summary>
+        /// This is used to update the list of stores when we Paginate & Search
+        /// </summary>
         private async Task UpdateStores()
         {
             try
@@ -96,6 +119,9 @@ namespace WpfIntegration.ViewModels
             }
         }
 
+        /// <summary>
+        /// This is used to retrieve the paginated list of stores from the backend
+        /// </summary>
         private async Task<IEnumerable<Store>> GetStoresAsync(int page)
         {
             var storesResponse = await _storesApi.GetStoresAsync(SearchQuery, page, StoresPerPage).ConfigureAwait(false);

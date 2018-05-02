@@ -5,6 +5,9 @@ using WpfIntegration.Infrastructure;
 
 namespace WpfIntegration.ViewModels
 {
+    /// <summary>
+    /// Single order view model, used for displaying a single order line
+    /// </summary>
     class OrderViewModel : BindableBase
     {
         public event EventHandler<Order> OrderViewRequested;

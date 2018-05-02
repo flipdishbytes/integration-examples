@@ -36,6 +36,9 @@ namespace WpfIntegration.ViewModels
                 60,
                 75
             };
+            
+            EstimatedMinutesForDeliveryIndex = 0;
+            RejectReason = Reject.RejectReasonEnum.TooBusy;
 
             AcceptCommand = new RelayCommand(ExecuteAcceptCommand);
             DeclineCommand = new RelayCommand(ExecuteDeclineCommand);
@@ -60,18 +63,28 @@ namespace WpfIntegration.ViewModels
         public ICommand AcceptCommand { get; }
         public ICommand DeclineCommand { get; }
 
+        /// <summary>
+        /// This is used to accept the order with an estimated time for delivery
+        /// </summary>
         private async void ExecuteAcceptCommand(object obj)
         {
             await _ordersApi.AcceptOrderAsync(_order.OrderId, new Accept(EstimatedMinutesForDeliveryValues[EstimatedMinutesForDeliveryIndex]));
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_storeId)));
         }
 
+        /// <summary>
+        /// This is used to reject the order with a reject reason
+        /// </summary>
         private async void ExecuteDeclineCommand(object obj)
         {
             await _ordersApi.RejectOrderAsync(_order.OrderId, new Reject(RejectReason));
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrdersViewModel(_storeId)));
         }
         
+        /// <summary>
+        /// This creates the order summary with some basic information
+        /// </summary>
+        /// <returns>Order summary</returns>
         private string BuildOrderSummary()
         {
             if (_order == null) return string.Empty;
@@ -88,10 +101,10 @@ namespace WpfIntegration.ViewModels
 
             foreach (var item in _order.OrderItems)
             {
-                sb.Append("  ").Append("Item Name: ").AppendLine(item.Name);
+                sb.Append(" #").Append("Item Name: ").AppendLine(item.Name);
                 foreach (var option in item.OrderItemOptions)
                 {
-                    sb.Append("    ").Append("Option: ").AppendLine(option.Name);
+                    sb.Append("   *").Append("Option: ").AppendLine(option.Name);
                 }
             }
 

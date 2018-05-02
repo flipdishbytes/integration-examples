@@ -41,20 +41,34 @@ namespace WpfIntegration.ViewModels
 
         public ICommand PreviousPageCommand { get; }
         public ICommand NextPageCommand { get; }
-        
+
+        /// <summary>
+        /// Go to previous page of stores
+        /// Can execute checks that the index will not fall out of bounds
+        /// </summary>
+        /// <param name="obj">Nothing</param>
         private async void ExecutePreviousPageCommand(object obj)
         {
             _pageIndex--;
             await LoadOrders();
         }
 
+        /// <summary>
+        /// Go to next page of stores
+        /// Can execute checks that the index will not fall out of bounds
+        /// </summary>
+        /// <param name="obj">Nothing</param>
         private async void ExecuteNextPageCommand(object obj)
         {
             _pageIndex++;
             await LoadOrders();
         }
         
-        private async Task OnNextInterval()
+        /// <summary>
+        /// This is used to update orders that are ready to process by the restaurant
+        /// </summary>
+        /// <returns></returns>
+        private async Task UpdateReadyToProcessOrders()
         {
             try
             {
@@ -75,6 +89,9 @@ namespace WpfIntegration.ViewModels
             }
         }
 
+        /// <summary>
+        /// This is used to navigate to the Order Processing View
+        /// </summary>
         private void NewOrder_OrderViewRequested(object sender, Order e)
         {
             //Get the view model associated with this order
@@ -91,6 +108,9 @@ namespace WpfIntegration.ViewModels
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new OrderReadyToProccessViewModel(_physicalStoreId, e)));
         }
 
+        /// <summary>
+        /// This is used to update the list of stores when we Paginate & Load the page first time
+        /// </summary>
         private async Task LoadOrders()
         {
             try
@@ -108,6 +128,9 @@ namespace WpfIntegration.ViewModels
             }
         }
 
+        /// <summary>
+        /// This is used to retrieve the paginated list of orders from the backend
+        /// </summary>
         private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
         {
             var restaurants = new List<int?> { _physicalStoreId };
@@ -122,6 +145,9 @@ namespace WpfIntegration.ViewModels
             return ordersResponse.Data.Where(o => o.OrderState != Order.OrderStateEnum.ReadyToProcess);
         }
 
+        /// <summary>
+        /// This is used to retrieve the Ready To Process list of orders from the backend
+        /// </summary>
         private async Task<IEnumerable<Order>> GetReadyOrdersAsync()
         {
             var restaurants = new List<int?> { _physicalStoreId };
@@ -147,7 +173,7 @@ namespace WpfIntegration.ViewModels
             _intervalObservable = Observable.Interval(TimeSpan.FromSeconds(5))
                 .SubscribeOn(Scheduler.CurrentThread)
                 .ObserveOn(DispatcherScheduler.Current)
-                .Subscribe(async (i) => await OnNextInterval());
+                .Subscribe(async (i) => await UpdateReadyToProcessOrders());
         }
     }
 }
