@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using WpfIntegration.Infrastructure;
@@ -78,6 +79,27 @@ namespace WpfIntegration
             {
                 Console.WriteLine($"Unhandled exception occured: {e.Message}");
             }
+        }
+
+        /// <summary>
+        /// We are required to close the WebView in case we close the app on the screen that creates the WebView window
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (NavigationGrid != null && NavigationGrid.Children.Count > 0)
+            {
+                foreach (var navigationGridChild in NavigationGrid.Children)
+                {
+                    if (!(navigationGridChild is Grid grid)) continue;
+
+                    if (grid.DataContext != null && grid.DataContext is IViewModel viewModel)
+                    {
+                        viewModel.NavigateFrom();
+                    }
+                }
+            }
+            base.OnClosing(e);
         }
     }
 }

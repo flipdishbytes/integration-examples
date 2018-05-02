@@ -13,11 +13,10 @@ namespace WpfIntegration.ViewModels
     {
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
 
-        private readonly LoginWebView _login;
+        private LoginWebView _login;
 
         public LoginViewModel()
         {
-            _login = new LoginWebView();
             LoginCommand = new RelayCommand(ExecuteLoginCommand);
         }
 
@@ -36,7 +35,7 @@ namespace WpfIntegration.ViewModels
             var redirectUri = "oob://localhost/wpf.webview.client";
 
             var request = new RequestUrl($"{AppSettings.Settings.Endpoint}identity/connect/authorize");
-
+            
             var startUrl = request.CreateAuthorizeUrl(
                 clientId: AppSettings.Settings.ClientId,
                 responseType: responseType,
@@ -65,11 +64,13 @@ namespace WpfIntegration.ViewModels
         public Task NavigateFrom()
         {
             _login.Done -= _login_Done;
+            _login.Close();
             return Task.CompletedTask;
         }
 
         public Task NavigateTo()
         {
+            _login = new LoginWebView();
             _login.Done += _login_Done;
             return Task.CompletedTask;
         }
