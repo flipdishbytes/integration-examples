@@ -1,6 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
-using System.Windows;
 using System.Windows.Navigation;
 
 namespace WpfIntegration
@@ -8,7 +6,7 @@ namespace WpfIntegration
     /// <summary>
     /// Interaction logic for LogoutWebView.xaml
     /// </summary>
-    public partial class LogoutWebView : Window
+    public partial class LogoutWebView
     {
         public event EventHandler Done;
         private bool _navigatedToCallBackAlready;
