@@ -62,9 +62,9 @@ namespace WpfIntegration.Infrastructure
         }
 
         /// <summary>
-        /// Creates the end session request and sends it with TODO: Type here
+        /// Creates the end session request and shows the popup with the Web View.
+        /// When the logout is succesfully complete triggers the LogoutDone event.
         /// </summary>
-        /// <returns></returns>
         public void Logout()
         {
             _logout = new LogoutWebView();
