@@ -43,7 +43,7 @@ Full list of references for succesful compiling of this project, most of them ar
 * System.Reactive -- used for polling of new orders in an event driven way
 
 ### <a name='Windowsreferences'></a>Windows references
-* *Microsoft.mshtml* required for parsing the request for OAuth with IHtmlDocument3.aspx which provides additional properties and methods of ducment objects. 
+* *Microsoft.mshtml* required for parsing the request for OAuth with IHtmlDocument3.aspx which provides additional properties and methods of document objects. 
 * *System.Configuration* required for reading the App.config file
 ### <a name='NugetPackages'></a>Nuget Packages
 ```
@@ -58,7 +58,7 @@ App settings are located in the App.config file, there are 2 settings there that
 ```
   <appSettings>
     <!-- Endpoint is the url used to get your access token -->
-    <add key="Endpoint" value="https://app.getflipdish.com/"/>
+    <add key="Endpoint" value="https://api.flipdish.co/"/>
     <!-- ClientId is the app id located in your Flipdish Developer Portal Dashboard -->
     <add key="ClientId" value="[You need to set your client id here]"/>
   </appSettings>
@@ -98,7 +98,7 @@ public MainWindow()
 ```
 
 #### <a name='IViewModelinterface'></a>IViewModel interface
-Our view models that are suitable for navigation will have to implement the IViewModel interface in order to be used as navigation points. The interface is pretty simple, it contains an event that we subscribe to and two functions that allow us to properly Initialize the view model at runtime as well as deconstruct it.
+Our view models that are suitable for navigation will have to implement the IViewModel interface in order to be used as navigation points. The interface is pretty simple, it contains an event that we subscribe to and two functions that allow us to properly initialize the view model at runtime as well as deconstruct it.
 
 ```
 public interface IViewModel
