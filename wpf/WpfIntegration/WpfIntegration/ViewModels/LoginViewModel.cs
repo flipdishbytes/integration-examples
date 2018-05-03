@@ -34,7 +34,8 @@ namespace WpfIntegration.ViewModels
             //Set default API configuration base path
             Configuration.Default.BasePath = AppSettings.Settings.Endpoint;
             Configuration.Default.AccessToken = e.AccessToken;
-            //Add default API configuration header (this header is required to work with the API)
+            //In order to make the calls to the API we need to have a Bearer token associated with our request.
+            //This creates or sets the bearer token required to get a reply from our API.
             if (Configuration.Default.DefaultHeader.ContainsKey("Authorization"))
             {
                 Configuration.Default.DefaultHeader["Authorization"] = $"Bearer {e.AccessToken}";
