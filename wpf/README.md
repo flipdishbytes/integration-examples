@@ -37,20 +37,25 @@ The goal of this project to show a simple integration that can be done with WPF.
 
 ## <a name='References'></a>References
 
-Full list of references for succesful compiling of this project, most of them are required for the 3 libraries that we will use. 
+Full list of references for successful compiling of this project, most of them are required for the 3 libraries that we will use. 
+
 * Flipdish - used to call our API
 * IdentityModel -- used for OAuth
 * System.Reactive -- used for polling of new orders in an event driven way
 
 ### <a name='Windowsreferences'></a>Windows references
+
 * *Microsoft.mshtml* required for parsing the request for OAuth with IHtmlDocument3.aspx which provides additional properties and methods of document objects. 
 * *System.Configuration* required for reading the App.config file
+
 ### <a name='NugetPackages'></a>Nuget Packages
+
 ```
 Install-Package Flipdish
 Install-Package IdentityModel -Version 3.6.1
 Install-Package System.Reactive -Version 3.1.1
 ```
+
 ## <a name='AppSettings'></a>App Settings
 
 App settings are located in the App.config file, there are 2 settings there that are required to run the application.
@@ -98,6 +103,7 @@ public MainWindow()
 ```
 
 #### <a name='IViewModelinterface'></a>IViewModel interface
+
 Our view models that are suitable for navigation will have to implement the IViewModel interface in order to be used as navigation points. The interface is pretty simple, it contains an event that we subscribe to and two functions that allow us to properly initialize the view model at runtime as well as deconstruct it.
 
 ```
@@ -109,7 +115,9 @@ public interface IViewModel
     Task NavigateTo();
 }
 ```
+
 #### <a name='AppNavigationEventArgs'></a>AppNavigationEventArgs
+
 This is the arguments that need to be supplied for a navigation request, it only contains an IViewModel that would be used as a DataContext for the view. 
 
 ```
@@ -129,7 +137,9 @@ public class AppNavigationEventArgs : EventArgs
 ```
 
 #### <a name='NavigationEventHandler'></a>Navigation Event Handler
+
 This is the handler for navigation request sent by the view model. This will effectively remove the current view from the visual tree and call NavigateFrom on the previous view model. It will also resolve the view associated with the new view model, pair the view to view model and call the NavigateTo method on the new view model. 
+
 ```
 private async void NavigateTo(object sender, AppNavigationEventArgs navigationArgs)
 {
@@ -175,8 +185,11 @@ private async void NavigateTo(object sender, AppNavigationEventArgs navigationAr
     }
 }
 ```
+
 ### <a name='Commands'></a>Commands
+
 In order to make our life easier with Commands we implement a simple RelayCommand class that accepts an action and a predicate. Action is used when the user clicks on the button to which the ICommand is bound. Predicate is used before the user click which allows you to enable \ disable the button, if the predicate returns true then the button is clickable otherwise it should be disabled. 
+
 ```
 public class RelayCommand : ICommand
 {
@@ -206,19 +219,23 @@ public class RelayCommand : ICommand
     }
 }
 ```
+
 ### <a name='PropertyChange'></a>Property Change
+
 In WPF we need to tell the framework when our properties change so that they could be changed in the UI. For the purposes of this in every ViewModel class we will inherit from BindableBase, we use the [BindableBase](https://github.com/PrismLibrary/Prism/blob/master/Source/Prism/Mvvm/BindableBase.cs) implemented in PRISM framework. In order to not bring the whole PRISM nuget we just use that piece of code in our sample. 
 
 ## <a name='OAuthLoginLogout'></a>OAuth Login \ Logout
 
-For succesfully using OAuth we suggest that you use [IdentityModel](https://github.com/IdentityModel/IdentityModel2) the package could be installed from Nuget, you don't need to run this if you installed all packages from the [Nuget Packages Section](#nuget_packages) above.
+For successfully using OAuth we suggest that you use [IdentityModel](https://github.com/IdentityModel/IdentityModel2) the package could be installed from Nuget, you don't need to run this if you installed all packages from the [Nuget Packages Section](#nuget_packages) above.
+
 ```
 Install-Package IdentityModel -Version 3.6.1
 ```
 
 ### <a name='OAuthService'></a>OAuth Service
 
-OAuthService is a singleton service that will be used as an orchestrator for Login and Logout commands, it creates the relevant queries and executes them in the Web View's explained below. The service itself is very simple, you will need to subscribe and unsubscribe to it's events in your ViewModels NavigateTo & NavigaeFrom.
+OAuthService is a singleton service that will be used as an orchestrator for Login and Logout commands, it creates the relevant queries and executes them in the Web View's explained below. The service itself is very simple, you will need to subscribe and unsubscribe to it's events in your ViewModels NavigateTo & NavigateFrom.
+
 ```
 private LoginWebView _login;
 private LogoutWebView _logout;
@@ -231,7 +248,7 @@ public event EventHandler LogoutDone;
 
 /// <summary>
 /// Creates the authorization request and shows the popup with the Web View.
-/// When the login is succesfully complete triggers the LoginDone event.
+/// When the login is successfully complete triggers the LoginDone event.
 /// </summary>
 public void Login(string scope, string responseType)
 {
@@ -284,9 +301,13 @@ private void _logout_Done(object sender, EventArgs e)
     LogoutDone?.Invoke(sender, e);
 }
 ```
+
 ### <a name='LoginWebView'></a>Login Web View
+
 In order to authenticate the user with OAuth we need to display Flipdish Login page. For this we are going to use native WPF WebBrowser. For this you will need to create a Window and embed the WebBrowser into it.
+
 #### <a name='Xaml'></a>Xaml
+
 ```
 <Window x:Class="WpfIntegration.LoginWebView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -300,7 +321,9 @@ In order to authenticate the user with OAuth we need to display Flipdish Login p
     </Grid>
 </Window>
 ```
+
 #### <a name='CodeBehind'></a>Code Behind
+
 ```
 public partial class LoginWebView
 {
@@ -366,8 +389,11 @@ public partial class LoginWebView
 ``` 
 
 ### <a name='LogoutWebView'></a>Logout Web View
+
 In order to succesfully end session for the user we need to display Flipdish Logout page. For this we are going to use native WPF WebBrowser. For this you will need to create a Window and embed the WebBrowser into it.
+
 #### <a name='Xaml-1'></a>Xaml
+
 ```
 <Window x:Class="WpfIntegration.LogoutWebView"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -382,7 +408,9 @@ In order to succesfully end session for the user we need to display Flipdish Log
     </Grid>
 </Window>
 ```
+
 #### <a name='CodeBehind-1'></a>Code Behind
+
 ```
 public partial class LogoutWebView
 {
@@ -419,7 +447,7 @@ public partial class LogoutWebView
         _callbackUri = callbackUri;
         webView.Navigate(startUri);
     }
-    
+
     private void RaiseDone()
     {
         Done?.Invoke(this, EventArgs.Empty);
@@ -430,14 +458,19 @@ public partial class LogoutWebView
 ## <a name='APIIntegration'></a>API Integration
 
 For the API integration we provide a standalone library ([Flipdish](https://github.com/flipdishbytes/api-client-csharp)), we also provide it as a nuget package, you don't need to run this if you installed all packages from the [Nuget Packages Section](#nuget_packages) above.
+
 ```
 Install-Package Flipdish
 ```
+
 ### <a name='Configurationofthelibrary'></a>Configuration of the library
+
 To use this library you will need to configure either the Library itself or every API instance.
 
 #### <a name='Method1StaticConfiguration'></a>Method 1 (Static Configuration)
+
 You could use a static method of configuration that will be applied to all API instances that are initiated without an explicit configuration instance.
+
 ```
 //Configures the base path of the API calls
 Configuration.Default.BasePath = AppSettings.Settings.Endpoint;
@@ -456,8 +489,11 @@ else
 var storesApi = new StoresApi();
 var ordersApi = new OrdersApi();
 ```
+
 #### <a name='Method2SpecificConfiguration'></a>Method 2 (Specific Configuration)
+
 We could also specify Configuration directly to the constructor of our API objects. This allows for a more flexible configuration.
+
 ```
 var configuration = new Configuration();
 configuration.BasePath = AppSettings.Settings.Endpoint;
@@ -468,11 +504,15 @@ var ordersApi = new OrdersApi(configuration);
 //This API instance will run with Default Static Configuration
 var ordersApiDefault = new OrdersApi();
 ```
+
 ### <a name='StoresAPI'></a>Stores API
+
 For the purposes of the demo we only use a few API calls outlined below. If you would like to see further API documentation, you can find it in our [Stores API Reference](https://developers.getflipdish.com/v1.0/reference#stores).
 
 #### <a name='RetrievepaginatedstoresWithsearchquery'></a>Retrieve paginated stores (With search query)
-Keep in mind that the maximum amount of stores retrieved per query is 25. Every time we call this we also recieve the total number of stores so we calculate total pages that we could display based on the amount of Stores we want to display per page. 
+
+Keep in mind that the maximum amount of stores retrieved per query is 25. Every time we call this we also receive the total number of stores so we calculate total pages that we could display based on the amount of Stores we want to display per page. 
+
 ```
 private async Task<IEnumerable<Store>> GetStoresAsync(int page)
 {
@@ -494,9 +534,13 @@ private async Task<IEnumerable<Store>> GetStoresAsync(int page)
 ```
 
 ### <a name='OrdersAPI'></a>Orders API
+
 For the purposes of the demo we only use a few API calls outlined below. If you would like to see further API documentation, you can find it in our [Orders API Reference](https://developers.getflipdish.com/v1.0/reference#orders).
+
 #### <a name='RetrievepaginatedordersWithsearchquery'></a>Retrieve paginated orders (With search query)
-Every time we call this we also recieve the total number of orders so we calculate total pages that we could display based on the amount of orders we want to display per page. 
+
+Every time we call this we also receive the total number of orders so we calculate total pages that we could display based on the amount of orders we want to display per page. 
+
 ```
 private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
 {
@@ -518,17 +562,23 @@ private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
     return ordersResponse.Data;
 }
 ```
+
 #### <a name='AcceptOrder'></a>Accept Order
+
 In order to Accept an order we need to pass the ID of the order and we should create an Accept object which contains only one property: EstimatedMinutesForDelivery
+
 ```
 var ordersApi = new OrdersApi();
 var acceptObject = new Accept([EstimatedMinutesForDelivery]);
 await ordersApi.AcceptOrderAsync([OrderId], acceptObject);            
 ```
+
 #### <a name='RejectOrder'></a>Reject Order
+
 In order to Reject an order we need to pass the ID of the order and we should create a Reject object which contains only one property: RejectReason
+
 ```
 var ordersApi = new OrdersApi();
 var rejectObject = new Reject([RejectReason]);
-await ordersApi.RejectOrderAsync([OrderId], rejectObject);  
+await ordersApi.RejectOrderAsync([OrderId], rejectObject);
 ```
