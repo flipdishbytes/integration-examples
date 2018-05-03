@@ -107,9 +107,13 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Infrastructure\BindableBase.cs" />
+    <Compile Include="Infrastructure\OAuthService.cs" />
     <Compile Include="Infrastructure\RelayCommand.cs" />
     <Compile Include="Infrastructure\AppNavigationEventArgs.cs" />
     <Compile Include="Interfaces\IViewModel.cs" />
+    <Compile Include="LogoutWebView.xaml.cs">
+      <DependentUpon>LogoutWebView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ViewModels\LoginViewModel.cs" />
     <Compile Include="ViewModels\OrderReadyToProccessViewModel.cs" />
     <Compile Include="ViewModels\OrdersViewModel.cs" />
@@ -125,10 +129,17 @@
     <Compile Include="Views\OrdersView.xaml.cs">
       <DependentUpon>OrdersView.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Views\OrderView.xaml.cs">
+      <DependentUpon>OrderView.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\StoresView.xaml.cs">
       <DependentUpon>StoresView.xaml</DependentUpon>
     </Compile>
     <Page Include="LoginWebView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="LogoutWebView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -157,6 +168,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Views\OrdersView.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\OrderView.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

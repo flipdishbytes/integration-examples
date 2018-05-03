@@ -12,9 +12,7 @@ namespace WpfIntegration.ViewModels
     class LoginViewModel : BindableBase, IViewModel
     {
         public event EventHandler<AppNavigationEventArgs> RequestNavigation;
-
-        private LoginWebView _login;
-
+        
         public LoginViewModel()
         {
             LoginCommand = new RelayCommand(ExecuteLoginCommand);
@@ -24,29 +22,7 @@ namespace WpfIntegration.ViewModels
 
         private void ExecuteLoginCommand(object obj)
         {
-            RequestToken("openid api", OidcConstants.ResponseTypes.CodeIdTokenToken);
-        }
-        
-        /// <summary>
-        /// Creates the authorization request and shows the popup with the Web View
-        /// </summary>
-        private void RequestToken(string scope, string responseType)
-        {
-            var redirectUri = "oob://localhost/wpf.webview.client";
-
-            var request = new RequestUrl($"{AppSettings.Settings.Endpoint}identity/connect/authorize");
-            
-            var startUrl = request.CreateAuthorizeUrl(
-                clientId: AppSettings.Settings.ClientId,
-                responseType: responseType,
-                scope: scope,
-                redirectUri: redirectUri,
-                nonce: CryptoRandom.CreateUniqueId());
-
-            _login = new LoginWebView();
-            _login.Done += _login_Done;
-            _login.Show();
-            _login.Start(new Uri(startUrl), new Uri(redirectUri));
+            OauthService.Service.Login("openid api", OidcConstants.ResponseTypes.CodeIdTokenToken);
         }
 
         /// <summary>
@@ -57,22 +33,29 @@ namespace WpfIntegration.ViewModels
         {
             //Set default API configuration base path
             Configuration.Default.BasePath = AppSettings.Settings.Endpoint;
+            Configuration.Default.AccessToken = e.AccessToken;
             //Add default API configuration header (this header is required to work with the API)
-            Configuration.Default.DefaultHeader.Add("Authorization", $"Bearer {e.AccessToken}");
-
-            _login.Done -= _login_Done;
-            _login.Close();
+            if (Configuration.Default.DefaultHeader.ContainsKey("Authorization"))
+            {
+                Configuration.Default.DefaultHeader["Authorization"] = $"Bearer {e.AccessToken}";
+            }
+            else
+            {
+                Configuration.Default.DefaultHeader.Add("Authorization", $"Bearer {e.AccessToken}");
+            }
 
             RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel()));
         }
 
         public Task NavigateFrom()
         {
+            OauthService.Service.LoginDone -= _login_Done;
             return Task.CompletedTask;
         }
 
         public Task NavigateTo()
         {
+            OauthService.Service.LoginDone += _login_Done;
             return Task.CompletedTask;
         }
     }

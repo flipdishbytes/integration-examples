@@ -90,26 +90,31 @@ namespace WpfIntegration.ViewModels
             if (_order == null) return string.Empty;
 
             var sb = new StringBuilder();
-            sb.Append("Customer Name: ").AppendLine(_order.Customer.Name);
-            sb.Append("Customer EmailAddress: ").AppendLine(_order.Customer.EmailAddress);
-            sb.Append("Customer PhoneNumber: ").AppendLine(_order.Customer.PhoneNumber);
+            sb.Append("Flipdish >> ").Append(_order.OrderId?.ToString() ?? string.Empty).Append(" >> ").AppendLine(_order.Store?.Name ?? string.Empty);
+            sb.Append("Time of order: ").AppendLine(_order.PlacedTime?.ToString() ?? string.Empty);
             sb.Append("Delivery Type:").AppendLine(_order.DeliveryType?.ToString() ?? string.Empty);
-            sb.Append("Order Id: ").AppendLine(_order.OrderId.ToString());
-            sb.Append("Order Total: ").AppendLine(_order.Amount.ToString());
-            sb.Append("Chef's Notes: ").AppendLine(_order.ChefNote);
-            sb.AppendLine("Order Items:");
+            sb.Append("Chef's Notes: ").AppendLine(_order.ChefNote ?? string.Empty).AppendLine();
 
+            sb.AppendLine("Order Items:");
             foreach (var item in _order.OrderItems)
             {
-                sb.Append(" #").Append("Item Name: ").AppendLine(item.Name);
+                sb.Append(" #").Append("Item Name: ").Append(item.Name ?? string.Empty).Append("...").AppendLine(item.Price?.ToString() ?? string.Empty);
                 foreach (var option in item.OrderItemOptions)
                 {
-                    sb.Append("   *").Append("Option: ").AppendLine(option.Name);
+                    sb.Append("   -").Append("Option: ").AppendLine(option.Name ?? string.Empty);
                 }
             }
 
-            return sb.ToString();
+            sb.AppendLine().Append("Processing Fee: ").AppendLine(_order.ProcessingFee?.ToString() ?? string.Empty);
+            sb.Append("Order Total: ").AppendLine(_order.Amount?.ToString() ?? string.Empty);
+            sb.Append("Payment Type: ").AppendLine(_order.PaymentAccountType?.ToString() ?? string.Empty).AppendLine();
 
+            sb.Append("Customer Info:").AppendLine();
+            sb.Append(" - Name: ").AppendLine(_order.Customer?.Name ?? string.Empty);
+            sb.Append(" - Phone Number: ").AppendLine(_order.Customer?.PhoneNumber ?? string.Empty);
+            sb.Append(" - Email Address: ").AppendLine(_order.Customer?.EmailAddress ?? string.Empty);
+
+            return sb.ToString();
         }
 
         public Task NavigateFrom()

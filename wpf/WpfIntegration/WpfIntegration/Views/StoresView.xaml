@@ -30,8 +30,9 @@
         <RowDefinition Height="4*"/>
     </Grid.RowDefinitions>
 
-    <Label Grid.Column="0" Grid.Row="0" Content="Stores" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-    <StackPanel Grid.Column="0" Grid.Row="1" Orientation="Vertical" Margin="5" Width="500" HorizontalAlignment="Left">
+    <Label Grid.Row="0" Content="Stores" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+    <Button Grid.Column="2" Grid.Row="0" Content="Logout" Width="65" FontSize="16" Command="{Binding LogoutCommand}" HorizontalAlignment="Right" Margin="0,5,10,5"/>
+    <StackPanel Grid.Row="1" Orientation="Vertical" Margin="5" Width="500" HorizontalAlignment="Left">
         <StackPanel Orientation="Horizontal">
             <Label Content="Search Query:" FontSize="16"/>
             <TextBox Margin="10,0,10,0" Text="{Binding SearchQuery}" Width="250"/>
@@ -51,8 +52,8 @@
         </Grid>
         <ListView ItemsSource="{Binding Stores}" SelectedItem="{Binding SelectedStore}" ItemTemplate="{StaticResource Store}"/>
     </StackPanel>
-    <Button Grid.Column="0" Grid.Row="1" Grid.RowSpan="2" Margin="0,10,20,0" Content="Select Store" Width="454" Height="641" FontSize="50" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding SelectStoreCommand}"/>
-    <Button Grid.Column="0" Grid.Row="2" Margin="0,10,0,0" Content="Previous Page" Width="100" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Command="{Binding PreviousPageCommand}"/>
-    <Button Grid.Column="0" Grid.Row="2" Margin="0,10,519,0" Content="Next Page" Width="100" Height="50" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding NextPageCommand}"/>
+    <Button Grid.Row="1" Grid.RowSpan="2" Margin="0,10,20,0" Content="Select Store" Width="454" Height="641" FontSize="50" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding SelectStoreCommand}"/>
+    <Button Grid.Row="2" Margin="20,10,0,0" Content="Previous Page" Width="100" Height="50" VerticalAlignment="Top" HorizontalAlignment="Left" Command="{Binding PreviousPageCommand}"/>
+    <Button Grid.Row="2" Margin="0,10,519,0" Content="Next Page" Width="100" Height="50" VerticalAlignment="Top" HorizontalAlignment="Right" Command="{Binding NextPageCommand}"/>
 
 </Grid>

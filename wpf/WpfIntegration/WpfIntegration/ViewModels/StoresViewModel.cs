@@ -33,7 +33,9 @@ namespace WpfIntegration.ViewModels
             NextPageCommand = new RelayCommand(ExecuteNextPageCommand, m => _pageIndex < _totalPages); 
             SelectStoreCommand = new RelayCommand(ExecuteSelectStoreCommand, m => SelectedStore != null);
             SearchCommand = new RelayCommand(ExecuteSearchCommand);
+            LogoutCommand = new RelayCommand(ExecuteLogoutCommand);
         }
+
 
         public ObservableCollection<StoreViewModel> Stores { get; }
         public StoreViewModel SelectedStore
@@ -50,6 +52,7 @@ namespace WpfIntegration.ViewModels
         public ICommand NextPageCommand { get; }
         public ICommand SelectStoreCommand { get; }
         public ICommand SearchCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         /// <summary>
         /// Go to previous page of stores
@@ -98,6 +101,15 @@ namespace WpfIntegration.ViewModels
         }
 
         /// <summary>
+        /// Logout from the system
+        /// </summary>
+        /// <param name="obj">Nothing</param>
+        private void ExecuteLogoutCommand(object obj)
+        {
+            OauthService.Service.Logout();
+        }
+
+        /// <summary>
         /// This is used to update the list of stores when we Paginate & Search
         /// </summary>
         private async Task UpdateStores()
@@ -120,6 +132,16 @@ namespace WpfIntegration.ViewModels
         }
 
         /// <summary>
+        /// Occurs when logout is succsesful
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OauthServiceOnLogoutDone(object sender, EventArgs e)
+        {
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new LoginViewModel()));
+        }
+
+        /// <summary>
         /// This is used to retrieve the paginated list of stores from the backend
         /// </summary>
         private async Task<IEnumerable<Store>> GetStoresAsync(int page)
@@ -137,11 +159,13 @@ namespace WpfIntegration.ViewModels
 
         public Task NavigateFrom()
         {
+            OauthService.Service.LogoutDone -= OauthServiceOnLogoutDone;
             return Task.CompletedTask;
         }
 
         public Task NavigateTo()
         {
+            OauthService.Service.LogoutDone += OauthServiceOnLogoutDone;
             return Task.CompletedTask;
         }
     }

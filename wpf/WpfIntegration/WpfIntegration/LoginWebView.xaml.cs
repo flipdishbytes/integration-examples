@@ -44,10 +44,7 @@ namespace WpfIntegration
 
         private void RaiseDone(AuthorizeResponse authorizeResponse)
         {
-            if (Done == null)
-                return;
-
-            Done.Invoke(this, authorizeResponse);
+            Done?.Invoke(this, authorizeResponse);
         }
 
         private void WebView_Navigating(object sender, NavigatingCancelEventArgs e)

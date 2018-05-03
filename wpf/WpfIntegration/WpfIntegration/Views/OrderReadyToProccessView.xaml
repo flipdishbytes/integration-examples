@@ -25,7 +25,7 @@
                 <Label Content="Estimated minutes for delivery" FontSize="14"/>
                 <ComboBox ItemsSource="{Binding EstimatedMinutesForDeliveryValues}" SelectedIndex="{Binding EstimatedMinutesForDelivery}" Width="60" Margin="30,0,0,0"/>
             </StackPanel>
-            <Button Content="Accept" Height="50" Margin="0,0,0,20" Command="{Binding AcceptCommand}" DockPanel.Dock="Bottom"/>
+            <Button Content="Accept" Height="50" Margin="20,0,20,20" Command="{Binding AcceptCommand}" DockPanel.Dock="Bottom"/>
             <Label/>
         </DockPanel>
         <DockPanel Grid.Row="1">
@@ -34,7 +34,7 @@
                 <Label Content="Rejection reason" FontSize="14"/>
                 <ComboBox ItemsSource="{Binding RejectValues}" SelectedItem="{Binding RejectReason}" Width="200" Margin="30,0,0,0"/>
             </StackPanel>
-            <Button Content="Reject" Height="50" Margin="0,0,0,20" Command="{Binding DeclineCommand}" DockPanel.Dock="Bottom"/>
+            <Button Content="Reject" Height="50" Margin="20,0,20,20" Command="{Binding DeclineCommand}" DockPanel.Dock="Bottom"/>
             <Label/>
         </DockPanel>
     </Grid>

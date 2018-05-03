@@ -19,7 +19,7 @@ namespace WpfIntegration.ViewModels
         
         private readonly int _physicalStoreId;
         private readonly OrdersApi _ordersApi;
-
+        
         private int _pageIndex = 1;
         private int _totalPages = 2;
         private const int OrdersPerPage = 17;
@@ -34,13 +34,17 @@ namespace WpfIntegration.ViewModels
 
             PreviousPageCommand = new RelayCommand(ExecutePreviousPageCommand, m => _pageIndex > 1);
             NextPageCommand = new RelayCommand(ExecuteNextPageCommand, m => _pageIndex < _totalPages);
+            LogoutCommand = new RelayCommand(ExecuteLogoutCommand);
+            BackCommand = new RelayCommand(ExecuteBackButton);
         }
-
+        
         public ObservableCollection<OrderViewModel> Orders { get; }
         public ObservableCollection<OrderViewModel> NewOrders { get; }
 
         public ICommand PreviousPageCommand { get; }
         public ICommand NextPageCommand { get; }
+        public ICommand LogoutCommand { get; }
+        public ICommand BackCommand { get; }
 
         /// <summary>
         /// Go to previous page of stores
@@ -63,7 +67,25 @@ namespace WpfIntegration.ViewModels
             _pageIndex++;
             await LoadOrders();
         }
-        
+
+        /// <summary>
+        /// Logout from the system
+        /// </summary>
+        /// <param name="obj">Nothing</param>
+        private void ExecuteLogoutCommand(object obj)
+        {
+            OauthService.Service.Logout();
+        }
+
+        /// <summary>
+        /// Navigates back to store selection
+        /// </summary>
+        /// <param name="obj"></param>
+        private void ExecuteBackButton(object obj)
+        {
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new StoresViewModel()));
+        }
+
         /// <summary>
         /// This is used to update orders that are ready to process by the restaurant
         /// </summary>
@@ -87,6 +109,16 @@ namespace WpfIntegration.ViewModels
             {
                 // ignored
             }
+        }
+        
+        /// <summary>
+        /// Occurs when logout is succsesful
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OauthServiceOnLogoutDone(object sender, EventArgs e)
+        {
+            RequestNavigation?.Invoke(this, new AppNavigationEventArgs(new LoginViewModel()));
         }
 
         /// <summary>
@@ -115,16 +147,33 @@ namespace WpfIntegration.ViewModels
         {
             try
             {
+                foreach (var orderViewModel in Orders)
+                {
+                    orderViewModel.OrderViewRequested -= Order_OrderViewRequested;
+                }
+
+                Orders.Clear();
+
                 var orders = await GetOrdersAsync(_pageIndex);
 
                 foreach (var order in orders)
                 {
-                    Orders.Add(new OrderViewModel(order));
+                    var orderViewModel = new OrderViewModel(order);
+                    orderViewModel.OrderViewRequested += Order_OrderViewRequested;
+                    Orders.Add(orderViewModel);
                 }
             }
             catch
             {
                 // ignored
+            }
+        }
+
+        private void Order_OrderViewRequested(object sender, Order e)
+        {
+            if (sender is IViewModel viewModel)
+            {
+                RequestNavigation?.Invoke(this, new AppNavigationEventArgs(viewModel));
             }
         }
 
@@ -159,14 +208,13 @@ namespace WpfIntegration.ViewModels
         {
             //We dispose the observable that we create when we navigate to this page, to make sure that it doesn't run in the background
             _intervalObservable.Dispose();
-
+            OauthService.Service.LogoutDone -= OauthServiceOnLogoutDone;
             return Task.CompletedTask;
         }
-
+        
         public async Task NavigateTo()
         {
-            //Get all orders
-            await LoadOrders();
+            OauthService.Service.LogoutDone += OauthServiceOnLogoutDone;
 
             //This piece of code runs every 5 seconds, it checks if any orders are ready to be processed by the restaurant
             //It executes OnNextInterval every 5 seconds and subscribes & observes on current thread
@@ -174,6 +222,9 @@ namespace WpfIntegration.ViewModels
                 .SubscribeOn(Scheduler.CurrentThread)
                 .ObserveOn(DispatcherScheduler.Current)
                 .Subscribe(async (i) => await UpdateReadyToProcessOrders());
+
+            //Get all orders
+            await LoadOrders();
         }
     }
 }

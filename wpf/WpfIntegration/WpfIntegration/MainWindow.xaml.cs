@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using WpfIntegration.Infrastructure;
@@ -27,6 +26,7 @@ namespace WpfIntegration
             _viewViewModelPairs.Add(typeof(OrdersViewModel), new OrdersView());
             _viewViewModelPairs.Add(typeof(OrderReadyToProccessViewModel), new OrderReadyToProccessView());
             _viewViewModelPairs.Add(typeof(StoresViewModel), new StoresView());
+            _viewViewModelPairs.Add(typeof(OrderViewModel), new OrderView());
 
             //Navigate to the first view model, from here on navigation will be handled in the view models
             NavigateTo(this, new AppNavigationEventArgs(new LoginViewModel()));
