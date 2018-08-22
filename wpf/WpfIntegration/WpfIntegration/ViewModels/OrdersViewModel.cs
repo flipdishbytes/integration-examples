@@ -3,6 +3,7 @@ using Flipdish.Model;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Reactive.Concurrency;
 using System.Reactive.Linq;
@@ -161,12 +162,31 @@ namespace WpfIntegration.ViewModels
                     var orderViewModel = new OrderViewModel(order);
                     orderViewModel.OrderViewRequested += Order_OrderViewRequested;
                     Orders.Add(orderViewModel);
+
+                    TrySaveNewAcceptedOrdersToFile(order);
                 }
             }
             catch
             {
                 // ignored
             }
+        }
+
+
+        private void TrySaveNewAcceptedOrdersToFile(Order order)
+        {
+            if(!AppSettings.Settings.SaveOrdersToFile)
+            {
+                return;
+            }
+
+            var fileName = order.OrderId + ".json";
+            if (File.Exists(fileName))
+            {
+                return;
+            }
+            var json = Newtonsoft.Json.JsonConvert.SerializeObject(order);
+            File.WriteAllText(fileName, json);
         }
 
         private void Order_OrderViewRequested(object sender, Order e)

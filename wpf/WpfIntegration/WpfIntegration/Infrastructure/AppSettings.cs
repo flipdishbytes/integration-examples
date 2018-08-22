@@ -26,5 +26,17 @@ namespace WpfIntegration.Infrastructure
         public string Endpoint => ConfigurationManager.AppSettings["Endpoint"] ?? throw new ArgumentException(nameof(Endpoint));
 
         public string ClientId => ConfigurationManager.AppSettings["ClientId"] ?? throw new ArgumentException(nameof(ClientId));
+
+        public bool SaveOrdersToFile
+        {
+            get
+            {
+                var settingValue = ConfigurationManager.AppSettings["SaveOrdersToFile"];
+                if (string.IsNullOrEmpty(settingValue))
+                    return false;
+
+                return bool.TryParse(settingValue, out bool result) && result;
+            }
+        }
     }
 }
