@@ -183,7 +183,7 @@ namespace WpfIntegration.ViewModels
         private async Task<IEnumerable<Order>> GetOrdersAsync(int page)
         {
             var restaurants = new List<int?> { _physicalStoreId };
-            var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, null, page, OrdersPerPage).ConfigureAwait(false);
+            var ordersResponse = await _ordersApi.GetOrdersAsync(restaurants, null, null, null, page, OrdersPerPage).ConfigureAwait(false);
 
             if (ordersResponse.TotalRecordCount.HasValue)
             {

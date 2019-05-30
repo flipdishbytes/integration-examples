@@ -34,8 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Flipdish, Version=1.0.25.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Flipdish.1.0.25\lib\net45\Flipdish.dll</HintPath>
+    <Reference Include="Flipdish, Version=1.0.117.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Flipdish.1.0.117\lib\net45\Flipdish.dll</HintPath>
     </Reference>
     <Reference Include="IdentityModel, Version=3.6.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\IdentityModel.3.6.1\lib\net461\IdentityModel.dll</HintPath>
